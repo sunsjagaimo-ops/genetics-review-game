@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>遺伝の基本復習ゲーム</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0c1420;color:#edf5ff;font:16px/1.65 system-ui,sans-serif}main{max-width:980px;margin:auto;padding:40px 22px}h1{font-size:clamp(25px,5vw,48px);margin:0;line-height:1.2}header p,.hint{color:#a8bfd4}nav,.keys,.choices,.stats,.strands{display:flex;gap:10px;flex-wrap:wrap}nav{margin:26px 0 16px}button{font:inherit;color:inherit;background:#202e41;border:1px solid #40566c;border-radius:9px;padding:8px 15px;cursor:pointer}button:hover:not(:disabled),button[aria-pressed=true]{border-color:#7ee8c0;background:#244547}button:focus-visible{outline:3px solid #ffe381;outline-offset:3px}button:disabled{opacity:.55;cursor:default}section{background:#141f2e;border:1px solid #304257;border-radius:20px;padding:clamp(15px,4vw,34px)}h2{margin:0;font-size:clamp(22px,4vw,33px)}.stats{justify-content:space-between;color:#b9cfe5}progress{width:100%;height:10px;accent-color:#7ee8c0}.board{min-height:210px;display:grid;place-content:center;justify-items:center;gap:12px;text-align:center;padding:18px 5px;margin:14px 0;background:#0d1724;border-radius:14px}.tile,.keys button,.choices button{font:bold 24px ui-monospace,monospace}.tile{display:inline-grid;place-items:center;width:42px;height:48px;border-radius:9px;color:#0b1723;background:var(--base,#a4b6c8)}[data-base=A]{--base:#7ee8c0}[data-base=T],[data-base=U]{--base:#ffbe80}[data-base=G]{--base:#beafff}[data-base=C]{--base:#8bceff}.strands{flex-direction:column;align-items:center}.strand{display:flex;align-items:center;gap:5px}.strand small{font-size:14px;color:#c0d1e2}.tile.target{outline:2px solid #ffed9d;outline-offset:3px}.closed{gap:3px}.open{gap:19px}.open .strand:first-child{transform:translateX(-7px)}.open .strand:last-child{transform:translateX(7px);opacity:.65}.keys button{min-width:52px;color:#0b1723;background:var(--base)}.keys button:hover:not(:disabled){background:var(--base);filter:brightness(1.15)}.primary{background:#7ee8c0;color:#0d2330;font-weight:700;margin-top:14px}.feedback{min-height:33px;font-weight:700}.good{color:#7ee8c0}.bad{color:#ff9f9f}.choices{justify-content:center}.hint{min-height:26px;margin-bottom:0}[hidden]{display:none!important}
+.tile.masked{background:#26374a;color:#cfdef0;border:1px dashed #7890a7}.sequence{display:flex;flex-wrap:wrap;justify-content:center;gap:3px}.sequence button{min-width:32px;padding:5px;color:#0b1723;background:var(--base);font:bold 19px ui-monospace,monospace}.sequence button:hover{background:var(--base);filter:brightness(1.2)}
+.results{margin-top:14px;padding:16px;border:1px solid #7ee8c0;border-radius:12px;background:#0d1724}.results h3,.results p{margin:0 0 6px}.results button{margin-top:6px}
+.codon-found{display:inline-flex;gap:3px;outline:2px solid #ffe381;border-radius:7px}.sequence .tile{width:32px;height:35px;font-size:19px}
+.translation{display:grid;gap:14px;width:100%;min-width:0}.board:has(.translation){place-content:stretch}.translation-chain,.translation-options{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}.translation-step{display:grid;gap:4px;min-width:66px;padding:6px;border:1px solid #40566c;border-radius:8px}.translation-column{display:grid;gap:8px;min-width:66px}.translation-step.active{outline:2px solid #ffe381}.translation-step b{font:700 18px ui-monospace,monospace}.amino-slot{min-height:32px;display:grid;place-items:center}.amino-residue{position:relative;border-radius:8px;background:#244547;color:#a8f5d9;padding:3px 8px;font-weight:700}.amino-residue.linked::before{content:'–';position:absolute;right:100%;color:#7ee8c0;margin-right:4px}.translation-chain{justify-content:flex-start;width:max-content;margin:auto}.translation-track{overflow-x:auto;padding:5px}.translation-headings{color:#a8bfd4;font-size:14px}.codon-table{border-collapse:collapse;margin:8px auto 0;text-align:center}.table-wrap{overflow:auto}.codon-table caption{font-weight:700}.codon-table th,.codon-table td{padding:5px 7px;border:1px solid #40566c;white-space:nowrap}.codon-table td{font:14px ui-monospace,monospace}.translation-options{justify-content:flex-start}.translation-panel h3{margin:0 0 8px}
+.codon-reference{margin-top:14px}.codon-reference summary{width:fit-content;cursor:pointer;color:#a8e9d6;padding:6px 0}.codon-reference[open] .show-table,.codon-reference:not([open]) .hide-table{display:none}
+.folding{display:grid;justify-items:center;gap:8px;padding:12px 0}.folding h3{margin:0}.fold-figure{position:relative;width:min(100%,560px);height:150px}.fold-chain{position:absolute;inset:0;width:100%;height:100%;overflow:visible}.fold-chain polyline{fill:none;stroke:#7ee8c0;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.fold-residue{position:absolute;top:32%;left:var(--from);transform:translate(-50%,-50%);border:1px solid #74d4b6;border-radius:9px;background:#244547;color:#d1ffec;padding:3px 2px;width:clamp(24px,7vw,38px);text-align:center;font:700 clamp(9px,2vw,13px) ui-monospace,monospace}.fold-caption{margin:0;color:#a8bfd4}
+.science-note{margin-top:20px;border-top:1px solid #40566c;padding-top:12px;color:#b9cfe5;font-size:.9rem}.science-note p{margin:0 0 4px}.science-note summary{cursor:pointer;width:fit-content;padding:5px 0}.science-note ul{margin:6px 0 0;padding-left:1.4em}.science-note li+li{margin-top:6px}.strand-label{font-size:14px;color:#c0d1e2}
+</style>
+<main>
+<header><h1>遺伝の基本復習ゲーム</h1><p>DNAを複製し、RNAに転写し、翻訳の始まりを見つけよう。</p></header>
+<nav aria-label="ゲームを選ぶ"><button data-mode="0">DNAの複製</button><button data-mode="1">RNAへの転写</button><button data-mode="2">開始コドンを探せ！</button><button data-mode="3">コドン表で翻訳しよう</button></nav>
+<section aria-labelledby="title">
+<h2 id="title"></h2><p id="instructions"></p>
+<div class="stats" id="stats"><span>残り <strong id="time">30</strong> 秒</span><span>正解 <strong id="score">0</strong> 個</span></div>
+<progress id="timer" max="30" value="30" aria-label="残り時間"></progress>
+<div class="board" id="board"></div>
+<div class="feedback" id="feedback" role="status"></div>
+<div class="results" id="results" role="region" aria-labelledby="results-title" hidden>
+<h3 id="results-title">30秒の結果</h3>
+<p>正しく対合できた数 <strong id="result-correct">0</strong> 個</p>
+<p>間違えた回数 <strong id="result-wrong">0</strong> 回</p>
+<button id="close-results" type="button">閉じる</button>
+</div>
+<div class="keys" id="keys" aria-label="塩基を選ぶ"></div>
+<div class="translation-panel" id="translation-panel" hidden><h3>アミノ酸を選ぶ</h3><div class="translation-options" id="translation-options"></div><details class="codon-reference" id="codon-reference"><summary><span class="show-table">コドン表を表示</span><span class="hide-table">コドン表を閉じる</span></summary><div id="codon-reference-content"></div></details></div>
+<button class="primary" id="start">スタート</button>
+<p class="hint" id="hint"></p>
+</section>
+<footer class="science-note" aria-label="学習モデルの補足">
+<p>このゲームはしくみを簡略化した学習モデルです。各ゲームでは別の練習配列を使います。</p>
+<details id="science-note"><summary>このゲームの詳しい補足</summary><ul id="science-points"></ul></details>
+</footer>
+</main>
+<script>
+"use strict";
+const get = id => document.getElementById(id);
+const board = get("board"), feedback = get("feedback"), keys = get("keys"), start = get("start");
+const modes = [
+  { title:"DNAの複製", instructions:"DNAがほどけている。複製しよう。対合する塩基を30秒以内にいくつ選べるかな？", letters:"ATGC", pairs:{A:"T",T:"A",G:"C",C:"G"}, hint:"キーボードか画面のボタンで入力できます。" },
+  { title:"RNAへの転写", instructions:"DNAがほどけている。mRNAに情報を転写しよう。対合する塩基を30秒以内にいくつ選べるかな？", letters:"AUGC", pairs:{A:"U",T:"A",G:"C",C:"G"}, hint:"キーボードか画面のボタンで入力できます。" },
+  { title:"開始コドンを探せ！", instructions:"mRNAの塩基をチェックして、開始コドンAUGを探そう。そのAUGのどれかを押せばクリア！", hint:"翻訳が始まる位置から、リボソームは3塩基ずつ読みます。" },
+  { title:"コドン表で翻訳しよう", instructions:"AUGから順番に、コドン表を見ながらアミノ酸をつなげてタンパク質を作っていこう。コドン表は選択肢の下からも見れる。終止コドンなら「翻訳終了」を選ぼう。", hint:"mRNAは5′側から3′側へ、塩基を3つずつ読みます。" }
+];
+const scienceNotes = [
+  [
+    "実際の複製では、元の2本鎖がそれぞれ鋳型になります。できたDNAはどちらも、元の鎖1本と新しい鎖1本からなります。",
+    "DNAポリメラーゼは、鋳型の塩基に対合するヌクレオチドを取り込み、新しいDNA鎖を5′から3′へ伸ばします。"
+  ],
+  [
+    "RNAポリメラーゼはDNAの一部分を開き、2本のうち一方を鋳型にして、RNAを5′から3′へ伸ばします。",
+    "プレイ中に埋める下段は合成中のRNAです。新しく作られたRNAは鋳型から離れます。"
+  ],
+  [
+    "この練習ではAUGが1か所だけあります。実際には周囲の配列なども開始位置の決定に関わります。翻訳の途中のAUGはメチオニンを指定します。",
+    "リボソーム上で、開始tRNAのアンチコドンが開始コドンと対合します。mRNAの5′–AUG–3′に対するアンチコドンは、向かい合わせに書くと3′–UAC–5′です。",
+    "このゲームはメチオニンを運ぶ開始tRNAを例にしています。細菌では通常、開始時にホルミルメチオニンが使われます。"
+  ],
+  [
+    "上段のMetなどはアミノ酸です。実際にはtRNAのアンチコドンがmRNAのコドンと対合し、リボソーム上でアミノ酸どうしがつながります。",
+    "この表は標準遺伝暗号です。終止コドンはmRNAの末端を示すものではありません。放出因子が働いてアミノ酸の鎖が放出されます。",
+    "鎖は合成中や合成後に折りたたまれることがあります。ゲームの10個のアミノ酸は練習用で、アニメーションは実際の立体構造を示すものではありません。"
+  ]
+];
+const geneticCode = [
+  ["Ala","アラニン","GCU GCC GCA GCG"], ["Arg","アルギニン","CGU CGC CGA CGG AGA AGG"],
+  ["Asn","アスパラギン","AAU AAC"], ["Asp","アスパラギン酸","GAU GAC"],
+  ["Cys","システイン","UGU UGC"], ["Gln","グルタミン","CAA CAG"],
+  ["Glu","グルタミン酸","GAA GAG"], ["Gly","グリシン","GGU GGC GGA GGG"],
+  ["His","ヒスチジン","CAU CAC"], ["Ile","イソロイシン","AUU AUC AUA"],
+  ["Leu","ロイシン","UUA UUG CUU CUC CUA CUG"], ["Lys","リシン","AAA AAG"],
+  ["Met","メチオニン","AUG"], ["Phe","フェニルアラニン","UUU UUC"],
+  ["Pro","プロリン","CCU CCC CCA CCG"], ["Ser","セリン","UCU UCC UCA UCG AGU AGC"],
+  ["Thr","スレオニン","ACU ACC ACA ACG"], ["Trp","トリプトファン","UGG"],
+  ["Tyr","チロシン","UAU UAC"], ["Val","バリン","GUU GUC GUA GUG"],
+  ["Stop","翻訳終了","UAA UAG UGA"]
+];
+const aminoByCodon = new Map(geneticCode.flatMap(([code, , codons]) => codons.split(" ").map(codon => [codon, code])));
+const practiceCodons = "AUG GCU UUC GGU AAA UGG ACU GAU UAC CUG UAA".split(" ");
+let translationIndex = 0;
+const aminoOptions = get("translation-options");
+function codonTable() {
+  const letters = [..."UCAG"];
+  const headings = letters.map(base => '<th scope="col">' + base + '</th>').join("");
+  const rows = letters.map(first => letters.map(second => {
+    const cells = letters.map(third => {
+      const codon = first + second + third;
+      return '<td>' + codon + ' ' + aminoByCodon.get(codon) + '</td>';
+    }).join("");
+    return '<tr><th scope="row">' + first + second + '</th>' + cells + '</tr>';
+  }).join("")).join("");
+  return '<div class="table-wrap"><table class="codon-table"><caption>mRNAのコドン表</caption><thead><tr><th scope="col">先頭2塩基</th>' + headings + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+}
+function renderTranslation() {
+  const chain = practiceCodons.map((codon, position) => {
+    const active = position === translationIndex;
+    const code = aminoByCodon.get(codon);
+    const residue = position < translationIndex && code !== "Stop"
+      ? '<span class="amino-residue' + (position > 0 ? ' linked' : '') + '">' + code + '</span>'
+      : '';
+    const step = '<div class="translation-step' + (active ? ' active" aria-current="step' : '') + '"><b>' + codon + '</b></div>';
+    return '<div class="translation-column"><div class="amino-slot">' + residue + '</div>' + step + '</div>';
+  }).join("");
+  board.innerHTML = '<div class="translation"><div class="translation-headings">上段：伸びていくアミノ酸の鎖　下段：mRNA（5′ → 3′）</div><div class="translation-track"><div class="translation-chain">' + chain + '</div></div></div>';
+}
+function showProteinFolding() {
+  const message = "おめでとう、DNAの情報をもとにアミノ酸の鎖ができました！ タンパク質も、こうして作られたアミノ酸の鎖からできます。";
+  const folded = [[31,53],[31,31],[42,19],[53,24],[64,20],[72,37],[69,59],[59,72],[48,61],[43,43]];
+  const straight = folded.map((_, i) => [5 + 10 * i, 32]);
+  const residues = practiceCodons.slice(0, -1).map((codon, i) =>
+    '<span class="fold-residue" style="--from:' + straight[i][0] + '%">' + aminoByCodon.get(codon) + '</span>'
+  ).join("");
+  const points = coordinates => coordinates.map(pair => pair.join(",")).join(" ");
+  board.innerHTML += '<div class="folding"><h3>アミノ酸の鎖の折りたたみ</h3><div class="fold-figure" role="img" aria-label="10個のアミノ酸の鎖が折りたたまれて塊になる模式図"><svg class="fold-chain" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline vector-effect="non-scaling-stroke" points="' + points(straight) + '"></polyline></svg>' + residues + '</div><p class="fold-caption">折りたたみの模式図</p></div>';
+  const line = board.querySelector(".fold-chain polyline");
+  if (!line || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (line) {
+      line.setAttribute("points", points(folded));
+      board.querySelectorAll(".fold-residue").forEach((node, i) => {
+        node.style.left = folded[i][0] + "%";
+        node.style.top = folded[i][1] + "%";
+      });
+    }
+    status(message, "good");
+    return;
+  }
+  const markers = [...board.querySelectorAll(".fold-residue")];
+  const began = performance.now();
+  function animate(now) {
+    if (!board.contains(line)) return;
+    const progress = Math.min(1, Math.max(0, (now - began - 350) / 1300));
+    const eased = progress * progress * (3 - 2 * progress);
+    const coordinates = straight.map(([x, y], i) => [
+      x + (folded[i][0] - x) * eased,
+      y + (folded[i][1] - y) * eased
+    ]);
+    line.setAttribute("points", points(coordinates));
+    coordinates.forEach(([x, y], i) => {
+      markers[i].style.left = x + "%";
+      markers[i].style.top = y + "%";
+    });
+    if (progress < 1) requestAnimationFrame(animate);
+    else status(message, "good");
+  }
+  status("10個のアミノ酸がつながりました。", "good");
+  requestAnimationFrame(animate);
+}
+function startTranslation() {
+  phase = "translation";
+  translationIndex = 0;
+  aminoOptions.replaceChildren();
+  get("codon-reference").open = false;
+  get("codon-reference-content").innerHTML = codonTable();
+  get("translation-panel").hidden = false;
+  for (const [code, name] of geneticCode) {
+    const option = document.createElement("button");
+    option.textContent = code === "Stop" ? name : code + "（" + name + "）";
+    option.onclick = () => {
+      if (phase !== "translation") return;
+      if (code !== aminoByCodon.get(practiceCodons[translationIndex])) {
+        status("✕ 枠のコドンを表で確認しよう。", "bad");
+        return;
+      }
+      translationIndex++;
+      const track = board.querySelector(".translation-track");
+      const previousScroll = track.scrollLeft;
+      renderTranslation();
+      board.querySelector(".translation-track").scrollLeft = previousScroll;
+      board.querySelector(".translation-step.active")?.scrollIntoView?.({block:"nearest",inline:"nearest"});
+      if (translationIndex < practiceCodons.length) {
+        status("○ 正解！", "good");
+        return;
+      }
+      phase = "finished";
+      showProteinFolding();
+      get("translation-panel").hidden = true;
+      start.hidden = false;
+      start.textContent = "もう一度";
+      start.focus();
+    };
+    aminoOptions.append(option);
+  }
+  renderTranslation();
+}
+let mode = 0, phase = "ready", count = 0, mistakes = 0, deadline = 0, timerId, advanceId, bases = [], filled = [], index = 1;
+const dna = [..."ATGC"];
+const pick = list => list[Math.floor(Math.random() * list.length)];
+const tiles = (letters, highlight) => letters.map((base, i) => base === '?' ? '<span class="tile masked" aria-label="隠れた塩基">?</span>' : '<span class="tile'+(i===highlight?' target':'')+'" data-base="'+base+'">'+base+'</span>').join("");
+function status(message="", style="") {
+  feedback.textContent = message;
+  feedback.className = "feedback " + style;
+}
+function setMode(next) {
+  clearInterval(timerId);
+  clearTimeout(advanceId);
+  mode = next;
+  phase = "ready";
+  count = 0;
+  mistakes = 0;
+  get("results").hidden = true;
+  bases = [..."GATCC"];
+  filled = [];
+  index = 1;
+  const config = modes[mode];
+  get("science-points").innerHTML = scienceNotes[mode].map(point => "<li>" + point + "</li>").join("");
+  get("title").textContent = config.title;
+  get("instructions").textContent = config.instructions;
+  get("hint").textContent = config.hint;
+  get("stats").hidden = get("timer").hidden = mode >= 2;
+  get("translation-panel").hidden = true;
+  document.querySelectorAll("nav button").forEach(button => button.setAttribute("aria-pressed", Number(button.dataset.mode) === mode));
+  keys.replaceChildren();
+  for (const letter of config.letters || "") {
+    const button = document.createElement("button");
+    button.textContent = button.dataset.base = letter;
+    button.disabled = true;
+    button.onclick = () => answer(letter);
+    keys.append(button);
+  }
+  updateStats(30);
+  start.hidden = false;
+  start.textContent = "スタート";
+  status();
+  if (mode === 3) board.textContent = "コドン表を使って翻訳しよう";
+  else if (mode === 2) board.textContent = "mRNAの配列を調べよう";
+  else renderDNA(false);
+}
+function updateStats(seconds) {
+  get("time").textContent = Math.ceil(seconds);
+  get("timer").value = seconds;
+  get("score").textContent = count;
+}
+function renderDNA(open) {
+  const complement = bases.map((_, position) => filled[position] ?? '?');
+  const product = open ? '<div class="strand-label">' + (mode === 1 ? '合成中のRNA' : '合成中のDNA鎖') + '</div>' : '';
+  board.innerHTML = '<div class="strands '+(open?'open':'closed')+'"><div class="strand"><small>3′</small>'+tiles(bases,open?index:-1)+'<small>5′</small></div><div class="strand"><small>5′</small>'+tiles(complement,-1)+'<small>3′</small></div>'+product+'</div><div>'+(open && index < 0 ? '対合が完成' : open?'鋳型鎖の対象塩基 <strong>'+bases[index]+'</strong>':'DNA二本鎖')+'</div>';
+}
+function nextBase() {
+  index = (index + 1) % bases.length;
+  if (index === 0) {
+    bases = Array.from({length:5}, () => pick(dna));
+    filled = [];
+  }
+  renderDNA(true);
+}
+function tick() {
+  const seconds = Math.max(0, (deadline - performance.now()) / 1000);
+  updateStats(seconds);
+  if (seconds > 0) return true;
+  clearInterval(timerId);
+  phase = "finished";
+  clearTimeout(advanceId);
+  for (const button of keys.children) button.disabled = true;
+  start.hidden = false;
+  start.textContent = "もう一度";
+  status();
+  get("result-correct").textContent = count;
+  get("result-wrong").textContent = mistakes;
+  get("results").hidden = false;
+  get("close-results").focus();
+  return false;
+}
+function answer(letter) {
+  if (phase !== "pairing" || index < 0 || !modes[mode].letters.includes(letter) || !tick()) return;
+  if (modes[mode].pairs[bases[index]] === letter) {
+    filled[index] = letter;
+    count++;
+    get("score").textContent = count;
+    status("○ 正解", "good");
+    if (index === bases.length - 1) {
+      index = -1;
+      renderDNA(true);
+      advanceId = setTimeout(() => { if (tick()) nextBase(); }, 220);
+    } else {
+      nextBase();
+    }
+  } else {
+    mistakes++;
+    status("✕ もう一度", "bad");
+  }
+}
+function findCodon() {
+  phase = "search";
+  const letters = [..."ACGU"];
+  const randomBases = length => Array.from({length}, () => pick(letters)).join("");
+  const offset = 2 + Math.floor(Math.random() * 8);
+  let sequence;
+  do {
+    sequence = randomBases(offset) + "AUG" + randomBases(15 - offset);
+  } while (sequence.indexOf("AUG") !== offset || sequence.lastIndexOf("AUG") !== offset);
+  board.innerHTML = '<div>mRNA（5′ → 3′）</div><div class="sequence" aria-label="mRNA配列"></div>';
+  for (const [position, base] of [...sequence].entries()) {
+    const button = document.createElement("button");
+    button.textContent = button.dataset.base = base;
+    button.setAttribute("aria-label", (position + 1) + "番目の塩基 " + base);
+    button.onclick = () => {
+      if (position < offset || position >= offset + 3) {
+        status("✕ 開始コドンAUGを探そう。", "bad");
+        return;
+      }
+      phase = "finished";
+      const leading = tiles([...sequence.slice(0, offset)], -1);
+      const highlighted = '<span class="codon-found" aria-label="開始コドン AUG">' + tiles([..."AUG"], -1) + '</span>';
+      const trailing = tiles([...sequence.slice(offset + 3)], -1);
+      const readingFrame = sequence.slice(offset).match(/.{3}/g);
+      const frame = readingFrame.map((group, i) => i === 0 ? "<strong>" + group + "</strong>" : group).join(" · ");
+      board.innerHTML = '<div>mRNA（5′ → 3′）</div><div class="sequence">' + leading + highlighted + trailing + '</div><div>読み始めてからの区切り ' + frame + '</div>';
+      status("○ 正解！ クリア！", "good");
+      start.hidden = false;
+      start.textContent = "もう一度";
+      start.focus();
+    };
+    board.querySelector(".sequence").append(button);
+  }
+  board.querySelector("button").focus();
+}
+get("close-results").onclick = () => {
+  get("results").hidden = true;
+  start.focus();
+};
+start.onclick = () => {
+  get("results").hidden = true;
+  status();
+  start.hidden = true;
+  if (mode === 3) {
+    startTranslation();
+    return;
+  }
+  if (mode === 2) {
+    findCodon();
+    return;
+  }
+  count = 0;
+  mistakes = 0;
+  index = 4;
+  bases = Array.from({length:5}, () => pick(dna));
+  phase = "pairing";
+  deadline = performance.now() + 30000;
+  for (const button of keys.children) button.disabled = false;
+  nextBase();
+  updateStats(30);
+  timerId = setInterval(tick, 50);
+};
+document.addEventListener("keydown", event => {
+  if (phase !== "pairing" || event.repeat || event.isComposing || event.ctrlKey || event.metaKey || event.altKey) return;
+  const letter = event.key.toUpperCase();
+  if (letter.length === 1 && modes[mode].letters.includes(letter)) answer(letter);
+});
+document.querySelectorAll("nav button").forEach(button => button.onclick = () => setMode(Number(button.dataset.mode)));
+setMode(0);
+</script>
+</html>
